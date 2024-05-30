@@ -1,8 +1,10 @@
 using ApiTajamarAWS.Data;
 using ApiTajamarAWS.Helpers;
+using ApiTajamarAWS.Models;
 using ApiTajamarAWS.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 namespace ApiTajamarAWS;
 
 public class Startup
@@ -17,10 +19,15 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container
     public void ConfigureServices(IServiceCollection services)
     {
-        string connectionString = Configuration.GetConnectionString("MySql");
-        services.AddDbContext<TajamarContext>
-           (options => options.UseMySql(connectionString,
-           ServerVersion.AutoDetect(connectionString)));
+        //string connectionString = Configuration.GetConnectionString("MySql");
+        //services.AddDbContext<TajamarContext>
+        //   (options => options.UseMySql(connectionString,
+        //   ServerVersion.AutoDetect(connectionString)));
+
+        string jsonSecrets = HelperSecretManager.GetSecretsAsync().GetAwaiter().GetResult();
+        KeysModel keysModel = JsonConvert.DeserializeObject<KeysModel>(jsonSecrets);
+        services.AddSingleton<KeysModel>(x => keysModel);
+        string connectionString = keysModel.MySql;
 
         services.AddTransient<RepositoryUsuarios>();
         services.AddTransient<RepositoryEmpresa>();
